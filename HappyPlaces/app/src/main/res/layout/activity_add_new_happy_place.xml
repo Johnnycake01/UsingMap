@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.AddNewHappyPlace">
+    tools:context=".ui.AddNewHappyPlace"
+    android:id="@+id/addNewPlace"
+    >
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/addHappyPlaceToolBar"
         android:layout_width="match_parent"
@@ -87,14 +89,15 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 >
+
                 <com.google.android.material.textfield.TextInputEditText
-                   android:id="@+id/teDate"
+                    android:id="@+id/teDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
-                    />
+                    android:inputType="text"
+                    android:onClick="onClick" />
 
             </com.google.android.material.textfield.TextInputLayout>
             <com.google.android.material.textfield.TextInputLayout
@@ -112,13 +115,15 @@
                 app:layout_constraintStart_toStartOf="parent"
                 >
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/teLocation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapSentences"
                     />
 
             </com.google.android.material.textfield.TextInputLayout>
-            <androidx.appcompat.widget.AppCompatImageView
+
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/ivImage"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
@@ -127,22 +132,25 @@
                 app:layout_constraintTop_toBottomOf="@id/tlLocation"
                 app:layout_constraintStart_toStartOf="parent"
                 android:src ="@drawable/ic_baseline_image_24"
-                />
-           <TextView
-               android:id="@+id/btAddImage"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="Add Image"
-               android:textAllCaps="false"
-               android:background="@color/white"
-               android:textColor="@color/maxi_blue_purple"
-               android:textSize="18sp"
-               app:layout_constraintStart_toEndOf="@id/ivImage"
-               app:layout_constraintTop_toTopOf="@id/ivImage"
-               app:layout_constraintBottom_toBottomOf="@id/ivImage"
-               app:layout_constraintEnd_toEndOf="parent"
+                app:civ_border_width="2dp"
+                app:civ_border_color="#F3EBEB"/>
 
-               />
+            <TextView
+                android:id="@+id/tvAddImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:onClick="onClick"
+                android:text="Add Image"
+                android:clickable="true"
+                android:textAllCaps="false"
+                android:textColor="@color/maxi_blue_purple"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="@id/ivImage"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ivImage"
+
+                app:layout_constraintTop_toTopOf="@id/ivImage" />
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btSave"
                 android:layout_width="match_parent"
@@ -152,6 +160,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:text="SAVE"
+                android:onClick="onClick"
                 android:textColor="@color/davysGray"
                 android:textSize="21sp"
                 android:background="@drawable/rounded_button_background"
