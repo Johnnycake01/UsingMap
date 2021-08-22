@@ -19,6 +19,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,6 +29,10 @@ import com.example.happyplaces.R
 import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
 import com.example.happyplaces.utility.*
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.textfield.TextInputEditText
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
@@ -50,10 +55,14 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
     private lateinit var title: TextInputEditText
     private lateinit var location: TextInputEditText
     private lateinit var ivImage:ImageView
+    private lateinit var btSave:AppCompatButton
     private lateinit var thisLayout:ConstraintLayout
     private var saveImageToGallery:Uri? = null
     private  var mLatitude:Double = 0.0
     private var mLongitude:Double = 0.0
+    private var newHappyPlaceDetails:HappyPlaceModel? = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +76,11 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
         myDate = findViewById(R.id.teDate)
         ivImage = findViewById(R.id.ivImage)
         thisLayout = findViewById(R.id.addNewPlace)
+        btSave = findViewById(R.id.btSave)
+
+        if(intent.hasExtra(EXTRA_PLACE_DETAILS)){
+            newHappyPlaceDetails= intent.getParcelableExtra(EXTRA_PLACE_DETAILS)
+        }
 
         dateSetListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
         cal.set(Calendar.YEAR,year)
@@ -79,6 +93,27 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         addHappyPlaceToolBar.setNavigationOnClickListener {
             onBackPressed()
+        }
+        //places
+        if(!Places.isInitialized()){
+            Places.initialize(this@AddNewHappyPlace,resources.getString(R.string.google_map_api_key))
+        }
+
+
+        if (newHappyPlaceDetails != null){
+            supportActionBar?.title = "Edit Happy Place"
+
+            title.setText(newHappyPlaceDetails!!.title)
+            location.setText(newHappyPlaceDetails!!.location)
+            description.setText(newHappyPlaceDetails!!.description)
+            myDate.setText(newHappyPlaceDetails!!.date)
+            mLatitude = newHappyPlaceDetails!!.latitude
+            mLongitude = newHappyPlaceDetails!!.longitude
+            saveImageToGallery = Uri.parse(newHappyPlaceDetails!!.image)
+            ivImage.setImageURI(saveImageToGallery)
+            btSave.text = "Update"
+
+
         }
     }
 //set onclick listener for all views
@@ -129,7 +164,8 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
                         thisLayout.snackbar("please select an image")
                     }
                     else -> {
-                        val happyPlaceModel = HappyPlaceModel(0,
+                        val happyPlaceModel = HappyPlaceModel(
+                            if (newHappyPlaceDetails == null)0 else newHappyPlaceDetails!!.id,
                             title.text.toString(),
                             saveImageToGallery.toString(),
                             description.text.toString(),
@@ -137,20 +173,49 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
                             location.text.toString(),
                             mLatitude,mLongitude)
                         val dbHandler = DatabaseHandler(this)
-                        val addHappyPlaceToDB = dbHandler.addHappyPlace(happyPlaceModel)
-                        if(addHappyPlaceToDB > 0){
-                            thisLayout.snackbar("Happy Place added successfully")
-                            setResult(Activity.RESULT_OK)
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                finish()
-                            }, 2000)
+                        if (newHappyPlaceDetails == null) {
+                            val addHappyPlaceToDB = dbHandler.addHappyPlace(happyPlaceModel)
+                            if(addHappyPlaceToDB > 0){
+                                thisLayout.snackbar("Happy Place added successfully")
+                                setResult(Activity.RESULT_OK)
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    finish()
+                                }, 1000)
 
+                            }
+                        }else{
+                            val updateHappyPlaceToDB = dbHandler.updateHappyPlace(happyPlaceModel)
+                            if(updateHappyPlaceToDB > 0){
+                                thisLayout.snackbar("Happy Place updated successfully")
+                                setResult(Activity.RESULT_OK)
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    finish()
+                                }, 1000)
+
+                            }
                         }
+
 
                     }
 
                 }
 
+            }
+            R.id.teLocation ->{
+                try {
+                    // These are the list of fields which we required is passed
+                    val fields = listOf(
+                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                        Place.Field.ADDRESS
+                    )
+                    // Start the autocomplete intent with a unique request code.
+                    val intent =
+                        Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                            .build(this@AddNewHappyPlace)
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -198,8 +263,7 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
                  saveImageToGallery = saveImageToInternalStorage(thumbNail)
                 Log.d(TAG,"gallery uri:::$saveImageToGallery")
 
-            }
-            if (requestCode == GALLERY_REQUEST_CODE){
+            }else if (requestCode == GALLERY_REQUEST_CODE){
                 if(data != null){
                     val imageUri = data.data
                     try{
@@ -216,6 +280,12 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
                     }
                 }
 
+            }else if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
+                val place: Place = Autocomplete.getPlaceFromIntent(data!!)
+
+                location.setText(place.address)
+                mLatitude = place.latLng!!.latitude
+                mLongitude = place.latLng!!.longitude
             }
         }
 

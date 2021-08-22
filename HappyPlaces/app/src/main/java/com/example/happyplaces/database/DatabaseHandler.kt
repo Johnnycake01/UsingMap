@@ -54,6 +54,35 @@ class DatabaseHandler(context: Context):SQLiteOpenHelper(context,DATABASE_NAME,n
         db.close() // Closing database connection
         return result
     }
+    /**
+     * Function to update a Happy Place details to SQLite Database.
+     */
+    fun updateHappyPlace(happyPlace: HappyPlaceModel): Int {
+        val db = this.writableDatabase
+
+        val contentValues = ContentValues()
+        contentValues.put(KEY_TITLE, happyPlace.title) // HappyPlaceModelClass TITLE
+        contentValues.put(KEY_IMAGE, happyPlace.image) // HappyPlaceModelClass IMAGE
+        contentValues.put(
+            KEY_DESCRIPTION,
+            happyPlace.description
+        ) // HappyPlaceModelClass DESCRIPTION
+        contentValues.put(KEY_DATE, happyPlace.date) // HappyPlaceModelClass DATE
+        contentValues.put(KEY_LOCATION, happyPlace.location) // HappyPlaceModelClass LOCATION
+        contentValues.put(KEY_LATITUDE, happyPlace.latitude) // HappyPlaceModelClass LATITUDE
+        contentValues.put(KEY_LONGITUDE, happyPlace.longitude) // HappyPlaceModelClass LONGITUDE
+
+        // Inserting Row
+        val result = db.update(HAPPY_PLACE_TABLE,
+            contentValues,
+            KEY_ID +"="+happyPlace.id,
+            null)
+
+        //2nd argument is String containing where u want to update to
+
+        db.close() // Closing database connection
+        return result
+    }
     fun getHappyPlace():ArrayList<HappyPlaceModel>{
         val arrayOfHappyPlace = ArrayList<HappyPlaceModel>()
         val selectQuery = "SELECT * FROM $HAPPY_PLACE_TABLE"
@@ -83,5 +112,18 @@ class DatabaseHandler(context: Context):SQLiteOpenHelper(context,DATABASE_NAME,n
             return arrayOfHappyPlace
         }
         return arrayOfHappyPlace
+    }
+
+    fun deleteHappyPlace(happyPlace: HappyPlaceModel): Int {
+        val db = this.writableDatabase
+        // deleting Row
+        val result = db.delete(HAPPY_PLACE_TABLE,
+            KEY_ID +"="+happyPlace.id,
+            null)
+
+        //2nd argument is String containing where u want to update to
+
+        db.close() // Closing database connection
+        return result
     }
 }

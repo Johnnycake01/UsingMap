@@ -1,6 +1,8 @@
 package com.example.happyplaces.adapter
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +11,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.R
+import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
+import com.example.happyplaces.ui.AddNewHappyPlace
+import com.example.happyplaces.utility.EXTRA_PLACE_DETAILS
 
 class PlacesAdapter (private val context: Context, private val listItem:ArrayList<HappyPlaceModel>):
     RecyclerView.Adapter<PlacesAdapter.ContactHolder>(){
@@ -46,6 +51,12 @@ class PlacesAdapter (private val context: Context, private val listItem:ArrayLis
 
 
     }
+    fun notifyEditItem(activity: Activity, position: Int,requestCode:Int){
+        val intent = Intent(context,AddNewHappyPlace::class.java)
+        intent.putExtra(EXTRA_PLACE_DETAILS,listItem[position])
+        activity.startActivityForResult(intent,requestCode)
+        notifyItemChanged(position)
+    }
     fun setOnClickListener(onClickListener: OnClickOfHappyPlace) {
         this.onClickListener = onClickListener
     }
@@ -58,6 +69,15 @@ class PlacesAdapter (private val context: Context, private val listItem:ArrayLis
     //function to get count of item
     override fun getItemCount(): Int {
         return listItem.size
+    }
+
+    fun delteItemAt(position: Int) {
+        val dbHandler = DatabaseHandler(context)
+        val isDeleted = dbHandler.deleteHappyPlace(listItem[position])
+        if (isDeleted>0){
+            listItem.removeAt(position)
+            notifyItemRemoved(position)
+        }
     }
 
 

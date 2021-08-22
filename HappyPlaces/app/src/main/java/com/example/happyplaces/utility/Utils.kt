@@ -13,6 +13,9 @@ import com.google.android.material.snackbar.Snackbar
     const val DATABASE_VERSION = 1
     const val HAPPY_PLACE_TABLE = "HappyPlaceTable"
     const val ADD_NEW_PLACE_CODE = 5
+    const val EXTRA_PLACE_DETAILS = "extra place details"
+    const val ADD_PLACE_ACTIVITY_REQUEST_CODE = 1
+    const val PLACE_AUTOCOMPLETE_REQUEST_CODE = 20
 
     //ALL DATABASE COLUMN NAME
     const val KEY_ID = "_id"
