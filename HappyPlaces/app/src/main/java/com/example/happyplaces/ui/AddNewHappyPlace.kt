@@ -12,13 +12,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import android.widget.Toast
-import android.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -40,7 +40,6 @@ import java.io.IOException
 import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.jar.Manifest
 
 class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
     private lateinit var addHappyPlaceToolBar:androidx.appcompat.widget.Toolbar
@@ -132,15 +131,20 @@ class AddNewHappyPlace : AppCompatActivity(), View.OnClickListener {
                     else -> {
                         val happyPlaceModel = HappyPlaceModel(0,
                             title.text.toString(),
+                            saveImageToGallery.toString(),
                             description.text.toString(),
                             myDate.text.toString(),
                             location.text.toString(),
-                            saveImageToGallery.toString(),
                             mLatitude,mLongitude)
                         val dbHandler = DatabaseHandler(this)
                         val addHappyPlaceToDB = dbHandler.addHappyPlace(happyPlaceModel)
                         if(addHappyPlaceToDB > 0){
                             thisLayout.snackbar("Happy Place added successfully")
+                            setResult(Activity.RESULT_OK)
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                finish()
+                            }, 2000)
+
                         }
 
                     }
